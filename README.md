@@ -26,6 +26,17 @@ Gospel — Matt 11:28-30
   and my burden light.
 ```
 
+## Install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/sawirricardo/sate/main/install.sh | sh
+```
+
+Installs the right binary for macOS/Linux (amd64/arm64) into `~/.local/bin`
+(override with `SATE_INSTALL_DIR`). Windows users: grab the `.exe` from the
+[releases page](https://github.com/sawirricardo/sate/releases). With Go
+installed, `go install github.com/sawirricardo/sate@latest` works too.
+
 ## Usage
 
 ```sh
