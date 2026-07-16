@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -51,6 +52,11 @@ func activeBibleID() string {
 }
 
 func dataDir() string {
+	if runtime.GOOS == "windows" {
+		if dir, err := os.UserConfigDir(); err == nil { // %AppData%
+			return filepath.Join(dir, "sate")
+		}
+	}
 	dir, err := os.UserHomeDir()
 	if err != nil {
 		return ".sate"
@@ -111,7 +117,7 @@ func bibleCmd(args []string) error {
 		fmt.Println("removed", args[1])
 		return nil
 	default:
-		return fmt.Errorf("usage: sate bible [ls|add <id>|rm <id>]")
+		return fmt.Errorf("usage: sate bible [ls|add <id>|rm <id>|use <id>]")
 	}
 }
 
