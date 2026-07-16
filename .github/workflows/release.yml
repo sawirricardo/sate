@@ -1,21 +1,39 @@
 name: release
 
+# Every push to main is released: the next patch version is tagged
+# automatically, so the routine is just `git commit` + `git push`.
+# To bump minor/major instead, tag before pushing (or `make ship V=v0.2.0`);
+# a tag already pointing at HEAD is used as-is.
+
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
 
 permissions:
   contents: write
+
+concurrency: release
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tags are needed to compute the next version
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
       - run: make release # runs the tests, then cross-builds into dist/
-      - run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes
+      - name: tag and publish
         env:
           GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(git tag --points-at HEAD | grep '^v' | head -1)
+          if [ -z "$v" ]; then
+            v=$(git describe --tags --abbrev=0 | awk -F. -v OFS=. '{ $3+=1; print }')
+            git tag "$v"
+            git push origin "$v"
+          fi
+          gh release view "$v" >/dev/null 2>&1 ||
+            gh release create "$v" dist/* --title "$v" --generate-notes

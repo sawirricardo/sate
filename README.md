@@ -103,5 +103,8 @@ offered. LAI's Terjemahan Baru is copyrighted and therefore absent.
 make build      # native binary
 make test       # go test ./...
 make release    # dist/ binaries for darwin/linux/windows, amd64 + arm64
-make ship       # tag the next patch version and push; CI publishes the release
 ```
+
+Every push to `main` is released automatically: CI runs the tests, tags the
+next patch version, and publishes the binaries. To bump minor/major, tag
+before pushing (`make ship V=v0.2.0`).
