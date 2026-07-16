@@ -10,6 +10,13 @@ import (
 )
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "bible" {
+		if err := bibleCmd(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, "sate:", err)
+			os.Exit(1)
+		}
+		return
+	}
 	now := time.Now()
 	if len(os.Args) > 1 { // sate 2026-12-25 — show the banner for any date
 		if t, err := time.Parse("2006-01-02", os.Args[1]); err == nil {
