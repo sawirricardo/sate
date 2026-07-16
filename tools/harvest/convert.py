@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """One-time converter: catholic-resources.org lectionary tables -> liturgy/lectionary.json.
 
-Source pages (Felix Just, SJ; 1998/2002 USA Lectionary) live in pages/ next to
-this script. Only scripture *citations* are extracted, never reading texts.
-Keys must match what liturgy.Compute produces (see liturgy/lectionary.go).
+Source pages (Felix Just, SJ; 1998/2002 USA Lectionary) are downloaded on
+demand into pages/ (gitignored — they are Fr. Just's copyrighted work and
+are not redistributed here). Only scripture *citations* are extracted:
+uncopyrightable facts, never reading texts. Keys must match what
+liturgy.Compute produces (see liturgy/lectionary.go).
 Run from the repo root: python3 tools/harvest/convert.py
 """
 import json
 import re
 import html
 import sys
+import time
+import urllib.request
 from pathlib import Path
 
 PAGES = Path(__file__).parent / "pages"
+SOURCE = "https://catholic-resources.org/Lectionary/"
 CYCLES = ["A", "B", "C"]
 WD = {"Sun": 0, "Mon": 1, "Tues": 2, "Tue": 2, "Wed": 3, "Wednes": 3,
       "Thurs": 4, "Thu": 4, "Fri": 5, "Sat": 6, "Satur": 6}
@@ -24,8 +29,20 @@ table = {}
 conflicts = []
 
 
+def fetch(name):
+    path = PAGES / name
+    if not path.exists():
+        PAGES.mkdir(exist_ok=True)
+        url = SOURCE + name.replace(".html", ".htm")
+        print(f"fetching {url}", file=sys.stderr)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        path.write_bytes(urllib.request.urlopen(req).read())
+        time.sleep(1)  # be polite
+    return path
+
+
 def rows(name):
-    raw = (PAGES / name).read_text(encoding="latin-1")
+    raw = fetch(name).read_text(encoding="latin-1")
     for r in re.findall(r"<tr[^>]*>(.*?)</tr>", raw, re.S):
         cells = [re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]*>", " ", c))).strip()
                  for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", r, re.S)]
