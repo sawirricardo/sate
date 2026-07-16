@@ -40,6 +40,16 @@ var catalog = []translation{
 		"https://api.getbible.net/v2/ylt.json"},
 }
 
+// activeBibleID returns the translation chosen via `sate bible use`, or ""
+// (callers then fall back to the first installed in catalog order).
+func activeBibleID() string {
+	raw, err := os.ReadFile(filepath.Join(dataDir(), "default"))
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(raw))
+}
+
 func dataDir() string {
 	dir, err := os.UserHomeDir()
 	if err != nil {
@@ -55,18 +65,35 @@ func bibleCmd(args []string) error {
 	}
 	switch sub {
 	case "ls":
+		active := activeBibleID()
 		fmt.Println("Available translations (licenses allow local storage):")
 		fmt.Printf("  %-5s %-11s %-11s %-25s %s\n", "ID", "LANG", "CANON", "LICENSE", "NAME")
 		for _, t := range catalog {
 			mark := " "
 			if _, err := os.Stat(filepath.Join(dataDir(), t.ID+".json")); err == nil {
 				mark = "*"
+				if t.ID == active {
+					mark = ">"
+				}
 			}
 			fmt.Printf("%s %-5s %-11s %-11s %-25s %s\n", mark, t.ID, t.Language, t.Canon, t.License, t.Name)
 		}
-		fmt.Println("\n* = installed; the first installed one is used. Protestant-canon")
-		fmt.Println("bibles lack Wis/Sir/Bar/Macc, which the lectionary cites regularly —")
-		fmt.Println("those readings fall back to citation-only.")
+		fmt.Println("\n* = installed, > = active (switch with: sate bible use <id>).")
+		fmt.Println("Protestant-canon bibles lack Wis/Sir/Bar/Macc, which the lectionary")
+		fmt.Println("cites regularly — those readings fall back to citation-only.")
+		return nil
+	case "use":
+		if len(args) < 2 {
+			return fmt.Errorf("usage: sate bible use <id>")
+		}
+		id := args[1]
+		if _, err := os.Stat(filepath.Join(dataDir(), id+".json")); err != nil {
+			return fmt.Errorf("%s is not installed — run: sate bible add %s", id, id)
+		}
+		if err := os.WriteFile(filepath.Join(dataDir(), "default"), []byte(id), 0o644); err != nil {
+			return err
+		}
+		fmt.Println("using", id)
 		return nil
 	case "add":
 		if len(args) < 2 {

@@ -27,11 +27,18 @@ type bibleFile struct {
 	} `json:"books"`
 }
 
-// loadInstalledBible returns the first installed translation in catalog
-// order (dra first — full Catholic canon), or nil when none is installed.
+// loadInstalledBible returns the translation set via `sate bible use`, or
+// the first installed one in catalog order; nil when none is installed.
 func loadInstalledBible() *bibleFile {
+	ids := []string{}
+	if active := activeBibleID(); active != "" {
+		ids = append(ids, active)
+	}
 	for _, t := range catalog {
-		raw, err := os.ReadFile(filepath.Join(dataDir(), t.ID+".json"))
+		ids = append(ids, t.ID)
+	}
+	for _, id := range ids {
+		raw, err := os.ReadFile(filepath.Join(dataDir(), id+".json"))
 		if err != nil {
 			continue
 		}
@@ -39,7 +46,7 @@ func loadInstalledBible() *bibleFile {
 		if json.Unmarshal(raw, &b) != nil || len(b.Books) == 0 {
 			continue
 		}
-		b.id = t.ID
+		b.id = id
 		return &b
 	}
 	return nil
