@@ -37,7 +37,12 @@ def clean(c):
     c = re.sub(r"\((?:diff|new|note|cited[^)]*|see[^)]*)\)", "", c)
     c = re.sub(r"^(?:opt:|†|\*|cf\.|See\b|see\b)+\s*", "", c)
     c = c.split(" - Vg")[0]  # Vulgate/Greek numbering variants: keep the first form
-    c = re.sub(r"\s+", " ", c).strip(" .;")
+    c = c.replace("[Vulg.]", "")
+    c = re.sub(r"[\[\]]", "", c)  # optional-verse brackets: "[6-7,]"
+    # episode titles appended to gospel citations: "- Samaritan Woman"
+    c = re.sub(r"\s+-\s+[A-Z][A-Za-z&' ]*(?= or |$)", "", c)
+    c = re.sub(r"\s*\*+\s*$", "", c)
+    c = re.sub(r"\s+", " ", c).strip(" .;,")
     return c
 
 
