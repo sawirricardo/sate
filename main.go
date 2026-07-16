@@ -28,5 +28,12 @@ func main() {
 			fmt.Printf(" · %s", r.Second)
 		}
 		fmt.Printf(" · %s\n", r.Gospel)
+		if r.Alleluia != "" {
+			label := "Alleluia"
+			if day.Season == liturgy.Lent { // no Alleluia during Lent
+				label = "Verse before the Gospel"
+			}
+			fmt.Printf("  %s: %s\n", label, r.Alleluia)
+		}
 	}
 }

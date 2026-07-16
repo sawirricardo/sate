@@ -117,7 +117,7 @@ func TestSaints(t *testing.T) {
 func TestLookup(t *testing.T) {
 	// Verified against USCCB's published readings for this liturgical day.
 	r, ok := Compute(d(2026, time.July, 16)).Lookup()
-	if !ok || r.Gospel != "Matt 11:28-30" || r.First != "Isa 26:7-9, 12, 16-19" {
+	if !ok || r.Gospel != "Matt 11:28-30" || r.First != "Isa 26:7-9, 12, 16-19" || r.Alleluia != "Matt 11:28" {
 		t.Errorf("Lookup = %+v ok=%v", r, ok)
 	}
 }

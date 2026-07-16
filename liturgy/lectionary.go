@@ -14,10 +14,11 @@ import (
 //	XMAS-<mm>-<dd>, BAPTISM-<A|B|C>         Christmas season
 //	FEAST-<mm>-<dd>                         fixed solemnities/feasts
 type Readings struct {
-	First  string `json:"first"`
-	Psalm  string `json:"psalm"`
-	Second string `json:"second,omitempty"` // Sundays & solemnities
-	Gospel string `json:"gospel"`
+	First    string `json:"first"`
+	Psalm    string `json:"psalm"`
+	Second   string `json:"second,omitempty"`   // Sundays & solemnities
+	Alleluia string `json:"alleluia,omitempty"` // gospel acclamation verse
+	Gospel   string `json:"gospel"`
 }
 
 //go:embed lectionary.json

@@ -76,6 +76,10 @@ def put(key, cells, has_alleluia=True):
         return
     if len(slots) >= (5 if has_alleluia else 4) and is_citation(slots[2]):
         r["second"] = slots[2]
+    if has_alleluia:  # 5 slots: [f, p, s, a, g]; 4 slots: [f, p, a, g]
+        a = slots[3] if len(slots) >= 5 else slots[2] if len(slots) == 4 else ""
+        if is_citation(a):
+            r["alleluia"] = a
     if key in table:
         if table[key] != r:
             conflicts.append((key, table[key], r))
