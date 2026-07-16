@@ -24,16 +24,19 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - run: make release # runs the tests, then cross-builds into dist/
-      - name: tag and publish
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: tag # before the build, so Go stamps a clean version into the binaries
         run: |
           v=$(git tag --points-at HEAD | grep '^v' | head -1)
           if [ -z "$v" ]; then
             v=$(git describe --tags --abbrev=0 | awk -F. -v OFS=. '{ $3+=1; print }')
             git tag "$v"
-            git push origin "$v"
           fi
-          gh release view "$v" >/dev/null 2>&1 ||
-            gh release create "$v" dist/* --title "$v" --generate-notes
+          echo "TAG=$v" >> "$GITHUB_ENV"
+      - run: make release # runs the tests, then cross-builds into dist/
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git push origin "$TAG" || true # already exists when HEAD was pre-tagged
+          gh release view "$TAG" >/dev/null 2>&1 ||
+            gh release create "$TAG" dist/* --title "$TAG" --generate-notes
