@@ -1,4 +1,4 @@
-# sate
+# sate 🍢
 
 **sate** stands for *saat teduh* — Indonesian for a quiet time with God, most
 commonly known as a daily devotional. It also happens to be the same word as
