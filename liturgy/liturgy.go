@@ -20,11 +20,12 @@ const (
 type Day struct {
 	Date         time.Time
 	Season       Season
-	Week         int    // week within the season (0 = days after Ash Wednesday)
-	SundayCycle  string // A, B, C
-	WeekdayCycle string // I, II
-	Name         string // e.g. "Thursday of the 15th week in Ordinary Time"
-	Key          string // lectionary lookup key, e.g. "OT-15-4-II"
+	Week         int     // week within the season (0 = days after Ash Wednesday)
+	SundayCycle  string  // A, B, C
+	WeekdayCycle string  // I, II
+	Name         string  // e.g. "Thursday of the 15th week in Ordinary Time"
+	Key          string  // lectionary lookup key, e.g. "OT-15-4-II"
+	Saints       []Saint // memorials/feasts of the day (name layer only)
 }
 
 // Easter returns Easter Sunday for a year (Anonymous Gregorian / Meeus algorithm).
@@ -212,6 +213,8 @@ func Compute(t time.Time) Day {
 	if f, ok := feasts[d.Format("01-02")]; ok && (day.Season != Lent || f.overridesLent) {
 		day.Name = f.name
 		day.Key = "FEAST-" + d.Format("01-02")
+	} else {
+		day.Saints = sanctoral[d.Format("01-02")]
 	}
 	return day
 }

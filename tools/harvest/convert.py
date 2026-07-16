@@ -213,6 +213,38 @@ weekday_page("2002USL-Weekdays-Lent.html")
 weekday_page("2002USL-Weekdays-Easter.html")
 weekday_page("2002USL-Weekdays-AdventChristmas.html")
 
+# ---- Sanctoral calendar: saint names by fixed date (name layer only) ----
+def rank_label(r):
+    if "USA" in r or "Calif" in r or ":" in r:
+        return None  # US-only entries
+    if r == "Mem.":
+        return "memorial"
+    if r == "." or r.startswith("Univ"):
+        return "optional memorial"
+    if r.startswith("Feast"):
+        return "feast"
+    return None  # Solemnities are handled by the feasts map in liturgy.go
+
+
+saints = {}
+for cells in rows("2002USL-Sanctoral.html"):
+    if len(cells) < 4:
+        continue
+    m = re.match(r"\[?(\w+)\.? (\d+)", cells[1])
+    if not (m and m.group(1) in MONTHS):
+        continue
+    rank = rank_label(cells[3])
+    if not rank:
+        continue
+    name = re.sub(r"\s+", " ", re.sub(r"\s*\([^)]*\)", "", cells[2])).strip(" ,")
+    key = f"{MONTHS[m.group(1)]:02d}-{int(m.group(2)):02d}"
+    saints.setdefault(key, []).append({"name": name, "rank": rank})
+
+sanctoral = Path("liturgy/sanctoral.json")
+lines = [f"  {json.dumps(k)}: {json.dumps(saints[k])}" for k in sorted(saints)]
+sanctoral.write_text("{\n" + ",\n".join(lines) + "\n}\n")
+print(f"wrote {sum(len(v) for v in saints.values())} saints on {len(saints)} dates to {sanctoral}")
+
 for key, kept, dropped in conflicts:
     print(f"CONFLICT {key}: kept {kept} != {dropped}", file=sys.stderr)
 

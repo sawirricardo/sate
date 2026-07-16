@@ -99,6 +99,21 @@ func TestFullCoverage(t *testing.T) {
 	}
 }
 
+func TestSaints(t *testing.T) {
+	got := Compute(d(2026, time.July, 16)).Saints
+	if len(got) != 1 || got[0].Name != "Our Lady of Mount Carmel" || got[0].Rank != "optional memorial" {
+		t.Errorf("Jul 16 Saints = %+v", got)
+	}
+	// US-only entries must be excluded
+	if got := Compute(d(2026, time.January, 4)).Saints; len(got) != 0 {
+		t.Errorf("Jan 4 (St. Elizabeth Ann Seton, USA) should be empty, got %+v", got)
+	}
+	// feast-override days carry no duplicate saint line
+	if got := Compute(d(2026, time.August, 15)).Saints; len(got) != 0 {
+		t.Errorf("Assumption day should have no saint line, got %+v", got)
+	}
+}
+
 func TestLookup(t *testing.T) {
 	// Verified against USCCB's published readings for this liturgical day.
 	r, ok := Compute(d(2026, time.July, 16)).Lookup()

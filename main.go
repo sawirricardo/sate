@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/sawirricardo/sate/liturgy"
@@ -18,6 +19,9 @@ func main() {
 	day := liturgy.Compute(now)
 	fmt.Printf("✝ %s — %s (Year %s/%s)\n",
 		now.Format("Monday, 2 January 2006"), day.Name, day.SundayCycle, day.WeekdayCycle)
+	for _, s := range day.Saints {
+		fmt.Printf("  %s%s: %s\n", strings.ToUpper(s.Rank[:1]), s.Rank[1:], s.Name)
+	}
 	if r, ok := day.Lookup(); ok {
 		fmt.Printf("  Readings: %s · %s", r.First, r.Psalm)
 		if r.Second != "" {
