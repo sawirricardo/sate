@@ -29,18 +29,32 @@ func main() {
 	for _, s := range day.Saints {
 		fmt.Printf("  %s%s: %s\n", strings.ToUpper(s.Rank[:1]), s.Rank[1:], s.Name)
 	}
-	if r, ok := day.Lookup(); ok {
-		fmt.Printf("  Readings: %s · %s", r.First, r.Psalm)
+	r, ok := day.Lookup()
+	if !ok {
+		return
+	}
+	acclamation := "Alleluia"
+	if day.Season == liturgy.Lent { // no Alleluia during Lent
+		acclamation = "Verse before the Gospel"
+	}
+	if b := loadInstalledBible(); b != nil {
+		printPassage(b, "First Reading", r.First, day.SundayCycle)
+		printPassage(b, "Responsorial Psalm", r.Psalm, day.SundayCycle)
 		if r.Second != "" {
-			fmt.Printf(" · %s", r.Second)
+			printPassage(b, "Second Reading", r.Second, day.SundayCycle)
 		}
-		fmt.Printf(" · %s\n", r.Gospel)
 		if r.Alleluia != "" {
-			label := "Alleluia"
-			if day.Season == liturgy.Lent { // no Alleluia during Lent
-				label = "Verse before the Gospel"
-			}
-			fmt.Printf("  %s: %s\n", label, r.Alleluia)
+			printPassage(b, acclamation, r.Alleluia, day.SundayCycle)
 		}
+		printPassage(b, "Gospel", r.Gospel, day.SundayCycle)
+		return
+	}
+	fmt.Printf("  Readings: %s · %s", r.First, r.Psalm)
+	if r.Second != "" {
+		fmt.Printf(" · %s", r.Second)
+	}
+	fmt.Printf(" · %s\n", r.Gospel)
+	if r.Alleluia != "" {
+		fmt.Printf("  %s: %s\n", acclamation, r.Alleluia)
 	}
 }
