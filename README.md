@@ -103,4 +103,5 @@ offered. LAI's Terjemahan Baru is copyrighted and therefore absent.
 make build      # native binary
 make test       # go test ./...
 make release    # dist/ binaries for darwin/linux/windows, amd64 + arm64
+make ship       # tag the next patch version and push; CI publishes the release
 ```

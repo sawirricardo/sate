@@ -18,4 +18,11 @@ $(PLATFORMS):
 clean:
 	rm -rf $(DIST) $(BINARY)
 
-.PHONY: build test release clean $(PLATFORMS)
+# make ship          -> tag the next patch version and push (CI releases it)
+# make ship V=v0.2.0 -> ship a specific version
+ship:
+	@git diff-index --quiet HEAD || { echo "commit your changes first"; exit 1; }
+	@v=$(V); [ -n "$$v" ] || v=$$(git describe --tags --abbrev=0 | awk -F. -v OFS=. '{ $$3+=1; print }'); \
+	git tag "$$v" && git push origin main "$$v" && echo "shipped $$v — CI is building the release"
+
+.PHONY: build test release clean ship $(PLATFORMS)
