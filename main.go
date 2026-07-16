@@ -3,13 +3,47 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
 	"time"
 
 	"github.com/sawirricardo/sate/liturgy"
 )
 
+// version reports the module version when built via `go install pkg@vX.Y.Z`,
+// otherwise the git revision Go stamps into the binary at build time.
+func version() string {
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "sate (unknown)"
+	}
+	rev, dirty, when := "", "", ""
+	for _, s := range bi.Settings {
+		switch s.Key {
+		case "vcs.revision":
+			rev = s.Value
+		case "vcs.modified":
+			if s.Value == "true" {
+				dirty = "+dirty"
+			}
+		case "vcs.time":
+			when = s.Value
+		}
+	}
+	if len(rev) > 12 {
+		rev = rev[:12]
+	}
+	if rev != "" {
+		return fmt.Sprintf("sate %s (%s%s %s)", bi.Main.Version, rev, dirty, when)
+	}
+	return "sate " + bi.Main.Version
+}
+
 func main() {
+	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "version") {
+		fmt.Println(version())
+		return
+	}
 	if len(os.Args) > 1 && os.Args[1] == "bible" {
 		if err := bibleCmd(os.Args[2:]); err != nil {
 			fmt.Fprintln(os.Stderr, "sate:", err)
